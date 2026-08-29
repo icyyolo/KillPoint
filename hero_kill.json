@@ -1,0 +1,11 @@
+{
+  "sandbox_id": "36a665ec-391d-4129-b7b3-41aae245fab8",
+  "ledger_before_kill": "REFUND 4471 250 https",
+  "stop_seconds": 4.2,
+  "state_while_down": "SandboxState.STOPPED",
+  "start_seconds": 1.9,
+  "ledger_after_restart": "REFUND 4471 250 https",
+  "state_survived_machine_death": true,
+  "ledger_after_agent_restart": "REFUND 4471 250 httpsREFUND 4471 250 https://pay.example/r/4471\n",
+  "refunds": 2
+}

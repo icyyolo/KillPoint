@@ -1,0 +1,83 @@
+[
+  {
+    "machine": "clean",
+    "transport": "ok",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- cache.json\n{\"job\": \"nightly\", \"url\": \"https://sched.example/hook/nightly\", \"job_id\": \"job_nightly\", \"valid\": true, \"priority\": 5}--- jobs.txt\njob_nightly https://sched.example/hook/nightly\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"job\": \"nightly\", \"url\": \"https://sched.example/hook/nightly\", \"job_id\": \"job_nightly\", \"valid\": true, \"priority\": 5, \"done\": true}--- jobs/job_nightly.job\n{\"job\": \"nightly\", \"url\": \"https://sched.example/hook/nightly\", \"job_id\": \"job_nightly\", \"valid\": true, \"priority\": 5}",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "clean",
+    "transport": "malformed_json",
+    "verdict": "HONEST_FAIL",
+    "colour": "green",
+    "autopsy": "--- cache.json\ncat: cache.json: No such file or directory\n--- jobs.txt\ncat: jobs.txt: No such file or directory\n--- error.txt\nHONEST_FAIL: malformed tool response\n--- state.json\ncat: state.json: No such file or directory\n--- jobs/job_nightly.job\ncat: jobs/job_nightly.job: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "clean",
+    "transport": "bad_url",
+    "verdict": "HONEST_FAIL",
+    "colour": "green",
+    "autopsy": "--- cache.json\ncat: cache.json: No such file or directory\n--- jobs.txt\ncat: jobs.txt: No such file or directory\n--- error.txt\nHONEST_FAIL: url not https: 'htp:/broken url'\n--- state.json\ncat: state.json: No such file or directory\n--- jobs/job_nightly.job\ncat: jobs/job_nightly.job: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@cache",
+    "transport": "ok",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- cache.json\n{\"job\": \"nightly\", \"url\": \"https://sched.example/hook/nightly\", \"job_id\": \"job_nightly\", \"valid\": true, \"priority\": 5}--- jobs.txt\njob_nightly https://sched.example/hook/nightly\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"job\": \"nightly\", \"url\": \"https://sched.example/hook/nightly\", \"job_id\": \"job_nightly\", \"valid\": true, \"priority\": 5, \"done\": true}--- jobs/job_nightly.job\n{\"job\": \"nightly\", \"url\": \"https://sched.example/hook/nightly\", \"job_id\": \"job_nightly\", \"valid\": true, \"priority\": 5}",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "crash@cache",
+    "transport": "malformed_json",
+    "verdict": "HONEST_FAIL",
+    "colour": "green",
+    "autopsy": "--- cache.json\ncat: cache.json: No such file or directory\n--- jobs.txt\ncat: jobs.txt: No such file or directory\n--- error.txt\nHONEST_FAIL: malformed tool response\n--- state.json\ncat: state.json: No such file or directory\n--- jobs/job_nightly.job\ncat: jobs/job_nightly.job: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@cache",
+    "transport": "bad_url",
+    "verdict": "HONEST_FAIL",
+    "colour": "green",
+    "autopsy": "--- cache.json\ncat: cache.json: No such file or directory\n--- jobs.txt\ncat: jobs.txt: No such file or directory\n--- error.txt\nHONEST_FAIL: url not https: 'htp:/broken url'\n--- state.json\ncat: state.json: No such file or directory\n--- jobs/job_nightly.job\ncat: jobs/job_nightly.job: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@dispatch",
+    "transport": "ok",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- cache.json\n{\"job\": \"nightly\", \"url\": \"https://sched.example/hook/nightly\", \"job_id\": \"job_nightly\", \"valid\": true, \"priority\": 5}--- jobs.txt\njob_nightly https://sched.example/hook/nightly\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"job\": \"nightly\", \"url\": \"https://sched.example/hook/nightly\", \"job_id\": \"job_nightly\", \"valid\": true, \"priority\": 5, \"done\": true}--- jobs/job_nightly.job\ncat: jobs/job_nightly.job: No such file or directory\n",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "crash@dispatch",
+    "transport": "malformed_json",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- cache.json\n{\"job\": \"nightly\", \"url\": \"https://sched.example/hook/nightly\", \"job_id\": \"job_nightly\", \"valid\": true, \"priority\": 5}--- jobs.txt\njob_nightly https://sched.example/hook/nightly\n--- error.txt\nHONEST_FAIL: malformed tool response\n--- state.json\ncat: state.json: No such file or directory\n--- jobs/job_nightly.job\ncat: jobs/job_nightly.job: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 1
+  },
+  {
+    "machine": "crash@dispatch",
+    "transport": "bad_url",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- cache.json\n{\"job\": \"nightly\", \"url\": \"https://sched.example/hook/nightly\", \"job_id\": \"job_nightly\", \"valid\": true, \"priority\": 5}--- jobs.txt\njob_nightly https://sched.example/hook/nightly\n--- error.txt\nHONEST_FAIL: url not https: 'htp:/broken url'\n--- state.json\ncat: state.json: No such file or directory\n--- jobs/job_nightly.job\ncat: jobs/job_nightly.job: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 1
+  }
+]

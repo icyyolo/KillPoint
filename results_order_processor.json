@@ -1,0 +1,83 @@
+[
+  {
+    "machine": "clean",
+    "transport": "ok",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- pending.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250}--- journal.json\n[{\"order_id\": \"ord_4471\", \"seq\": 1, \"receipt\": \"https://pay.example/r/4471\"}]--- seq.txt\n1--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "clean",
+    "transport": "malformed_json",
+    "verdict": "LOST",
+    "colour": "red",
+    "autopsy": "--- pending.json\ncat: pending.json: No such file or directory\n--- journal.json\ncat: journal.json: No such file or directory\n--- seq.txt\ncat: seq.txt: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "clean",
+    "transport": "bad_url",
+    "verdict": "GARBAGE",
+    "colour": "red",
+    "autopsy": "--- pending.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"htp:/broken url\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250}--- journal.json\n[{\"order_id\": \"ord_4471\", \"seq\": 1, \"receipt\": \"htp:/broken url\"}]--- seq.txt\n1--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"htp:/broken url\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "crash@pending",
+    "transport": "ok",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- pending.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.examp--- journal.json\ncat: journal.json: No such file or directory\n--- seq.txt\ncat: seq.txt: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@pending",
+    "transport": "malformed_json",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- pending.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.examp--- journal.json\ncat: journal.json: No such file or directory\n--- seq.txt\ncat: seq.txt: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@pending",
+    "transport": "bad_url",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- pending.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.examp--- journal.json\ncat: journal.json: No such file or directory\n--- seq.txt\ncat: seq.txt: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@seq",
+    "transport": "ok",
+    "verdict": "DUPLICATE",
+    "colour": "yellow",
+    "autopsy": "--- pending.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250}--- journal.json\n[{\"order_id\": \"ord_4471\", \"seq\": 1, \"receipt\": \"https://pay.example/r/4471\"}, {\"order_id\": \"ord_4471\", \"seq\": 2, \"receipt\": \"https://pay.example/r/4471\"}]--- seq.txt\n2--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 2
+  },
+  {
+    "machine": "crash@seq",
+    "transport": "malformed_json",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- pending.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250}--- journal.json\n[{\"order_id\": \"ord_4471\", \"seq\": 1, \"receipt\": \"https://pay.example/r/4471\"}]--- seq.txt\n1--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 1
+  },
+  {
+    "machine": "crash@seq",
+    "transport": "bad_url",
+    "verdict": "DUPLICATE+GARBAGE",
+    "colour": "red",
+    "autopsy": "--- pending.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"htp:/broken url\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250}--- journal.json\n[{\"order_id\": \"ord_4471\", \"seq\": 1, \"receipt\": \"https://pay.example/r/4471\"}, {\"order_id\": \"ord_4471\", \"seq\": 2, \"receipt\": \"htp:/broken url\"}]--- seq.txt\n2--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"htp:/broken url\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 2
+  }
+]

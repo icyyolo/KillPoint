@@ -1,0 +1,4 @@
+daytona
+openai
+requests
+python-dotenv

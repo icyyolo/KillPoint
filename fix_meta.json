@@ -1,0 +1,7 @@
+{
+  "fixture": "refund_bot",
+  "rounds": 2,
+  "author": "nosana",
+  "endpoint": "https://5fjbewHVg9YvbHL1fMzyrZGfod7pW19iGCYa18zeSR5P.node.k8s.prd.nos.ci/v1",
+  "model": "fixer"
+}

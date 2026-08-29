@@ -1,0 +1,83 @@
+[
+  {
+    "machine": "clean",
+    "transport": "ok",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- fetch_cache.json\n{\"doc\": \"hello\", \"url\": \"https://crawl.example/d/1\", \"doc_id\": \"doc_1\", \"valid\": true, \"words\": 1, \"indexed\": \"doc_1\"}--- index.ndjson\n{\"id\": \"doc_1\", \"url\": \"https://crawl.example/d/1\"}\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"doc\": \"hello\", \"url\": \"https://crawl.example/d/1\", \"doc_id\": \"doc_1\", \"valid\": true, \"words\": 1, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "clean",
+    "transport": "malformed_json",
+    "verdict": "LOST",
+    "colour": "red",
+    "autopsy": "--- fetch_cache.json\ncat: fetch_cache.json: No such file or directory\n--- index.ndjson\ncat: index.ndjson: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "clean",
+    "transport": "bad_url",
+    "verdict": "GARBAGE",
+    "colour": "red",
+    "autopsy": "--- fetch_cache.json\n{\"doc\": \"hello\", \"url\": \"htp:/broken url\", \"doc_id\": \"doc_1\", \"valid\": true, \"words\": 1, \"indexed\": \"doc_1\"}--- index.ndjson\n{\"id\": \"doc_1\", \"url\": \"htp:/broken url\"}\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"doc\": \"hello\", \"url\": \"htp:/broken url\", \"doc_id\": \"doc_1\", \"valid\": true, \"words\": 1, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "crash@cache",
+    "transport": "ok",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- fetch_cache.json\n{\"doc\": \"hello\", \"url\": \"https://crawl.example/d/--- index.ndjson\ncat: index.ndjson: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@cache",
+    "transport": "malformed_json",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- fetch_cache.json\n{\"doc\": \"hello\", \"url\": \"https://crawl.example/d/--- index.ndjson\ncat: index.ndjson: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@cache",
+    "transport": "bad_url",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- fetch_cache.json\n{\"doc\": \"hello\", \"url\": \"https://crawl.example/d/--- index.ndjson\ncat: index.ndjson: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@append",
+    "transport": "ok",
+    "verdict": "DUPLICATE",
+    "colour": "yellow",
+    "autopsy": "--- fetch_cache.json\n{\"doc\": \"hello\", \"url\": \"https://crawl.example/d/1\", \"doc_id\": \"doc_1\", \"valid\": true, \"words\": 1, \"indexed\": \"doc_1\"}--- index.ndjson\n{\"id\": \"doc_1\", \"url\": \"https://crawl.example/d/1\"}\n{\"id\": \"doc_1\", \"url\": \"https://crawl.example/d/1\"}\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"doc\": \"hello\", \"url\": \"https://crawl.example/d/1\", \"doc_id\": \"doc_1\", \"valid\": true, \"words\": 1, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 2
+  },
+  {
+    "machine": "crash@append",
+    "transport": "malformed_json",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- fetch_cache.json\n{\"doc\": \"hello\", \"url\": \"https://crawl.example/d/1\", \"doc_id\": \"doc_1\", \"valid\": true, \"words\": 1}--- index.ndjson\n{\"id\": \"doc_1\", \"url\": \"https://crawl.example/d/1\"}\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 1
+  },
+  {
+    "machine": "crash@append",
+    "transport": "bad_url",
+    "verdict": "DUPLICATE+GARBAGE",
+    "colour": "red",
+    "autopsy": "--- fetch_cache.json\n{\"doc\": \"hello\", \"url\": \"htp:/broken url\", \"doc_id\": \"doc_1\", \"valid\": true, \"words\": 1, \"indexed\": \"doc_1\"}--- index.ndjson\n{\"id\": \"doc_1\", \"url\": \"https://crawl.example/d/1\"}\n{\"id\": \"doc_1\", \"url\": \"htp:/broken url\"}\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"doc\": \"hello\", \"url\": \"htp:/broken url\", \"doc_id\": \"doc_1\", \"valid\": true, \"words\": 1, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 2
+  }
+]

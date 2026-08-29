@@ -1,0 +1,83 @@
+[
+  {
+    "machine": "clean",
+    "transport": "ok",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- drafts.json\n{\"to\": \"alice@example.com\", \"receipt\": \"https://mail.example/s/1\", \"id\": \"m_1\", \"valid\": true, \"size\": 17}--- outbox.csv\nm_1,alice@example.com,https://mail.example/s/1\n--- sent.json\n{\"sent\": \"m_1\"}--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"to\": \"alice@example.com\", \"receipt\": \"https://mail.example/s/1\", \"id\": \"m_1\", \"valid\": true, \"size\": 17, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "clean",
+    "transport": "malformed_json",
+    "verdict": "LOST",
+    "colour": "red",
+    "autopsy": "--- drafts.json\ncat: drafts.json: No such file or directory\n--- outbox.csv\ncat: outbox.csv: No such file or directory\n--- sent.json\ncat: sent.json: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "clean",
+    "transport": "bad_url",
+    "verdict": "GARBAGE",
+    "colour": "red",
+    "autopsy": "--- drafts.json\n{\"to\": \"alice@example.com\", \"receipt\": \"htp:/broken url\", \"id\": \"m_1\", \"valid\": true, \"size\": 17}--- outbox.csv\nm_1,alice@example.com,htp:/broken url\n--- sent.json\n{\"sent\": \"m_1\"}--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"to\": \"alice@example.com\", \"receipt\": \"htp:/broken url\", \"id\": \"m_1\", \"valid\": true, \"size\": 17, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "crash@draft",
+    "transport": "ok",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- drafts.json\n{\"to\": \"alice@example.com\", \"receipt\": \"https://mail.--- outbox.csv\ncat: outbox.csv: No such file or directory\n--- sent.json\ncat: sent.json: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@draft",
+    "transport": "malformed_json",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- drafts.json\n{\"to\": \"alice@example.com\", \"receipt\": \"https://mail.--- outbox.csv\ncat: outbox.csv: No such file or directory\n--- sent.json\ncat: sent.json: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@draft",
+    "transport": "bad_url",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- drafts.json\n{\"to\": \"alice@example.com\", \"receipt\": \"https://mail.--- outbox.csv\ncat: outbox.csv: No such file or directory\n--- sent.json\ncat: sent.json: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@send",
+    "transport": "ok",
+    "verdict": "DUPLICATE",
+    "colour": "yellow",
+    "autopsy": "--- drafts.json\n{\"to\": \"alice@example.com\", \"receipt\": \"https://mail.example/s/1\", \"id\": \"m_1\", \"valid\": true, \"size\": 17}--- outbox.csv\nm_1,alice@example.com,https://mail.example/s/1\nm_1,alice@example.com,https://mail.example/s/1\n--- sent.json\n{\"sent\": \"m_1\"}--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"to\": \"alice@example.com\", \"receipt\": \"https://mail.example/s/1\", \"id\": \"m_1\", \"valid\": true, \"size\": 17, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 2
+  },
+  {
+    "machine": "crash@send",
+    "transport": "malformed_json",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- drafts.json\n{\"to\": \"alice@example.com\", \"receipt\": \"https://mail.example/s/1\", \"id\": \"m_1\", \"valid\": true, \"size\": 17}--- outbox.csv\nm_1,alice@example.com,https://mail.example/s/1\n--- sent.json\ncat: sent.json: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 1
+  },
+  {
+    "machine": "crash@send",
+    "transport": "bad_url",
+    "verdict": "DUPLICATE+GARBAGE",
+    "colour": "red",
+    "autopsy": "--- drafts.json\n{\"to\": \"alice@example.com\", \"receipt\": \"htp:/broken url\", \"id\": \"m_1\", \"valid\": true, \"size\": 17}--- outbox.csv\nm_1,alice@example.com,https://mail.example/s/1\nm_1,alice@example.com,htp:/broken url\n--- sent.json\n{\"sent\": \"m_1\"}--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"to\": \"alice@example.com\", \"receipt\": \"htp:/broken url\", \"id\": \"m_1\", \"valid\": true, \"size\": 17, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 2
+  }
+]

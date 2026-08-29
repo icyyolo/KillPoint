@@ -1,0 +1,83 @@
+[
+  {
+    "machine": "clean",
+    "transport": "ok",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- cache.json\n{\"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"id\": \"4471\", \"valid\": true, \"refund\": 250}--- ledger.txt\nREFUND 4471 250 https://pay.example/r/4471\n--- error.txt\ncat: error.txt: No such file or directory\n",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "clean",
+    "transport": "malformed_json",
+    "verdict": "LOST",
+    "colour": "red",
+    "autopsy": "--- cache.json\ncat: cache.json: No such file or directory\n--- ledger.txt\ncat: ledger.txt: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "clean",
+    "transport": "bad_url",
+    "verdict": "GARBAGE",
+    "colour": "red",
+    "autopsy": "--- cache.json\n{\"amount\": 250, \"receipt\": \"htp:/broken url\", \"id\": \"4471\", \"valid\": true, \"refund\": 250}--- ledger.txt\nREFUND 4471 250 htp:/broken url\n--- error.txt\ncat: error.txt: No such file or directory\n",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "crash4",
+    "transport": "ok",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- cache.json\n{\"amount\": 250, \"receipt\": \"https://pay.example/r/--- ledger.txt\ncat: ledger.txt: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash4",
+    "transport": "malformed_json",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- cache.json\n{\"amount\": 250, \"receipt\": \"https://pay.example/r/--- ledger.txt\ncat: ledger.txt: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash4",
+    "transport": "bad_url",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- cache.json\n{\"amount\": 250, \"receipt\": \"https://pay.example/r/--- ledger.txt\ncat: ledger.txt: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash5",
+    "transport": "ok",
+    "verdict": "DUPLICATE+GARBAGE",
+    "colour": "red",
+    "autopsy": "--- cache.json\n{\"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"id\": \"4471\", \"valid\": true, \"refund\": 250}--- ledger.txt\nREFUND 4471 250 httpsREFUND 4471 250 https://pay.example/r/4471\n--- error.txt\ncat: error.txt: No such file or directory\n",
+    "exit_code": 0,
+    "refunds": 2
+  },
+  {
+    "machine": "crash5",
+    "transport": "malformed_json",
+    "verdict": "GARBAGE",
+    "colour": "red",
+    "autopsy": "--- cache.json\n{\"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"id\": \"4471\", \"valid\": true, \"refund\": 250}--- ledger.txt\nREFUND 4471 250 https--- error.txt\ncat: error.txt: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 1
+  },
+  {
+    "machine": "crash5",
+    "transport": "bad_url",
+    "verdict": "DUPLICATE+GARBAGE",
+    "colour": "red",
+    "autopsy": "--- cache.json\n{\"amount\": 250, \"receipt\": \"htp:/broken url\", \"id\": \"4471\", \"valid\": true, \"refund\": 250}--- ledger.txt\nREFUND 4471 250 httpsREFUND 4471 250 htp:/broken url\n--- error.txt\ncat: error.txt: No such file or directory\n",
+    "exit_code": 0,
+    "refunds": 2
+  }
+]

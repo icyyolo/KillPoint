@@ -1,0 +1,83 @@
+[
+  {
+    "machine": "clean",
+    "transport": "ok",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- pending.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250}--- journal.json\n[{\"order_id\": \"ord_4471\", \"seq\": 1, \"receipt\": \"https://pay.example/r/4471\"}]--- seq.txt\n1--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "clean",
+    "transport": "malformed_json",
+    "verdict": "HONEST_FAIL",
+    "colour": "green",
+    "autopsy": "--- pending.json\ncat: pending.json: No such file or directory\n--- journal.json\ncat: journal.json: No such file or directory\n--- seq.txt\ncat: seq.txt: No such file or directory\n--- error.txt\nHONEST_FAIL: malformed tool response\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "clean",
+    "transport": "bad_url",
+    "verdict": "HONEST_FAIL",
+    "colour": "green",
+    "autopsy": "--- pending.json\ncat: pending.json: No such file or directory\n--- journal.json\ncat: journal.json: No such file or directory\n--- seq.txt\ncat: seq.txt: No such file or directory\n--- error.txt\nHONEST_FAIL: receipt not https: 'htp:/broken url'\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@pending",
+    "transport": "ok",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- pending.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250}--- journal.json\n[{\"order_id\": \"ord_4471\", \"seq\": 1, \"receipt\": \"https://pay.example/r/4471\"}]--- seq.txt\n1--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "crash@pending",
+    "transport": "malformed_json",
+    "verdict": "HONEST_FAIL",
+    "colour": "green",
+    "autopsy": "--- pending.json\ncat: pending.json: No such file or directory\n--- journal.json\ncat: journal.json: No such file or directory\n--- seq.txt\ncat: seq.txt: No such file or directory\n--- error.txt\nHONEST_FAIL: malformed tool response\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@pending",
+    "transport": "bad_url",
+    "verdict": "HONEST_FAIL",
+    "colour": "green",
+    "autopsy": "--- pending.json\ncat: pending.json: No such file or directory\n--- journal.json\ncat: journal.json: No such file or directory\n--- seq.txt\ncat: seq.txt: No such file or directory\n--- error.txt\nHONEST_FAIL: receipt not https: 'htp:/broken url'\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@seq",
+    "transport": "ok",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- pending.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250}--- journal.json\n[{\"order_id\": \"ord_4471\", \"seq\": 1, \"receipt\": \"https://pay.example/r/4471\"}]--- seq.txt\n1--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250, \"done\": true}",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "crash@seq",
+    "transport": "malformed_json",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- pending.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250}--- journal.json\n[{\"order_id\": \"ord_4471\", \"seq\": 1, \"receipt\": \"https://pay.example/r/4471\"}]--- seq.txt\n1--- error.txt\nHONEST_FAIL: malformed tool response\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 1
+  },
+  {
+    "machine": "crash@seq",
+    "transport": "bad_url",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- pending.json\n{\"item\": \"widget\", \"amount\": 250, \"receipt\": \"https://pay.example/r/4471\", \"order_id\": \"ord_4471\", \"valid\": true, \"total\": 250}--- journal.json\n[{\"order_id\": \"ord_4471\", \"seq\": 1, \"receipt\": \"https://pay.example/r/4471\"}]--- seq.txt\n1--- error.txt\nHONEST_FAIL: receipt not https: 'htp:/broken url'\n--- state.json\ncat: state.json: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 1
+  }
+]

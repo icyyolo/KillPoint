@@ -1,0 +1,83 @@
+[
+  {
+    "machine": "clean",
+    "transport": "ok",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- cache.json\n{\"file\": \"a.txt\", \"content\": \"hello\", \"url\": \"https://src.example/f/a.txt\", \"id\": \"a.txt\", \"valid\": true, \"checksum\": \"5\"}--- manifest.json\n[{\"file\": \"a.txt\", \"checksum\": \"5\", \"url\": \"https://src.example/f/a.txt\"}]--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"file\": \"a.txt\", \"content\": \"hello\", \"url\": \"https://src.example/f/a.txt\", \"id\": \"a.txt\", \"valid\": true, \"checksum\": \"5\", \"done\": true}--- backup/a.txt\nhello",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "clean",
+    "transport": "malformed_json",
+    "verdict": "LOST",
+    "colour": "red",
+    "autopsy": "--- cache.json\ncat: cache.json: No such file or directory\n--- manifest.json\ncat: manifest.json: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n--- backup/a.txt\ncat: backup/a.txt: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "clean",
+    "transport": "bad_url",
+    "verdict": "GARBAGE",
+    "colour": "red",
+    "autopsy": "--- cache.json\n{\"file\": \"a.txt\", \"content\": \"hello\", \"url\": \"htp:/broken url\", \"id\": \"a.txt\", \"valid\": true, \"checksum\": \"5\"}--- manifest.json\n[{\"file\": \"a.txt\", \"checksum\": \"5\", \"url\": \"htp:/broken url\"}]--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"file\": \"a.txt\", \"content\": \"hello\", \"url\": \"htp:/broken url\", \"id\": \"a.txt\", \"valid\": true, \"checksum\": \"5\", \"done\": true}--- backup/a.txt\nhello",
+    "exit_code": 0,
+    "refunds": 1
+  },
+  {
+    "machine": "crash@cache",
+    "transport": "ok",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- cache.json\n{\"file\": \"a.txt\", \"content\": \"hello\", \"url\": \"https://src.exa--- manifest.json\ncat: manifest.json: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n--- backup/a.txt\ncat: backup/a.txt: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@cache",
+    "transport": "malformed_json",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- cache.json\n{\"file\": \"a.txt\", \"content\": \"hello\", \"url\": \"https://src.exa--- manifest.json\ncat: manifest.json: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n--- backup/a.txt\ncat: backup/a.txt: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@cache",
+    "transport": "bad_url",
+    "verdict": "CORRUPT",
+    "colour": "red",
+    "autopsy": "--- cache.json\n{\"file\": \"a.txt\", \"content\": \"hello\", \"url\": \"https://src.exa--- manifest.json\ncat: manifest.json: No such file or directory\n--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n--- backup/a.txt\ncat: backup/a.txt: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 0
+  },
+  {
+    "machine": "crash@backup",
+    "transport": "ok",
+    "verdict": "DUPLICATE",
+    "colour": "yellow",
+    "autopsy": "--- cache.json\n{\"file\": \"a.txt\", \"content\": \"hello\", \"url\": \"https://src.example/f/a.txt\", \"id\": \"a.txt\", \"valid\": true, \"checksum\": \"5\"}--- manifest.json\n[{\"file\": \"a.txt\", \"checksum\": \"5\", \"url\": \"https://src.example/f/a.txt\"}, {\"file\": \"a.txt\", \"checksum\": \"5\", \"url\": \"https://src.example/f/a.txt\"}]--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"file\": \"a.txt\", \"content\": \"hello\", \"url\": \"https://src.example/f/a.txt\", \"id\": \"a.txt\", \"valid\": true, \"checksum\": \"5\", \"done\": true}--- backup/a.txt\nhello",
+    "exit_code": 0,
+    "refunds": 2
+  },
+  {
+    "machine": "crash@backup",
+    "transport": "malformed_json",
+    "verdict": "CLEAN",
+    "colour": "green",
+    "autopsy": "--- cache.json\n{\"file\": \"a.txt\", \"content\": \"hello\", \"url\": \"https://src.example/f/a.txt\", \"id\": \"a.txt\", \"valid\": true, \"checksum\": \"5\"}--- manifest.json\n[{\"file\": \"a.txt\", \"checksum\": \"5\", \"url\": \"https://src.example/f/a.txt\"}]--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\ncat: state.json: No such file or directory\n--- backup/a.txt\ncat: backup/a.txt: No such file or directory\n",
+    "exit_code": 1,
+    "refunds": 1
+  },
+  {
+    "machine": "crash@backup",
+    "transport": "bad_url",
+    "verdict": "DUPLICATE+GARBAGE",
+    "colour": "red",
+    "autopsy": "--- cache.json\n{\"file\": \"a.txt\", \"content\": \"hello\", \"url\": \"htp:/broken url\", \"id\": \"a.txt\", \"valid\": true, \"checksum\": \"5\"}--- manifest.json\n[{\"file\": \"a.txt\", \"checksum\": \"5\", \"url\": \"https://src.example/f/a.txt\"}, {\"file\": \"a.txt\", \"checksum\": \"5\", \"url\": \"htp:/broken url\"}]--- error.txt\ncat: error.txt: No such file or directory\n--- state.json\n{\"file\": \"a.txt\", \"content\": \"hello\", \"url\": \"htp:/broken url\", \"id\": \"a.txt\", \"valid\": true, \"checksum\": \"5\", \"done\": true}--- backup/a.txt\nhello",
+    "exit_code": 0,
+    "refunds": 2
+  }
+]

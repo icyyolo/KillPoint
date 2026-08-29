@@ -1,0 +1,78 @@
+<!doctype html><html><head><meta charset=utf-8>
+<title>Kill Point -- the generalization</title>
+<style>body{font-family:system-ui,sans-serif;margin:24px;background:#0d1117;color:#e6edf3}h1{font-size:22px} h2{font-size:16px;margin-top:28px} table{border-collapse:collapse;margin:8px 0}th,td{border:1px solid #30363d;padding:6px 10px;font-size:13px}td{text-align:center;color:#fff} .tag{color:#8b949e;font-size:12px}</style></head><body>
+<h1>Kill Point &mdash; six fixtures, one harness</h1>
+<p class=tag>Each row is a fixture: a different agent domain with different durable artifacts, crash points and record formats. Same 3&times;3 matrix, same six verdicts, same feedback loop. Local simulation (no sandboxes). Interaction cell = <b>DUPLICATE+GARBAGE</b> in every before matrix, all green after.</p>
+<h2>refund_bot <span class=tag>records = REFUND</span></h2>
+<table><caption>before</caption><tr><th>machine \ transport</th><th>ok</th><th>malformed_json</th><th>bad_url</th></tr>
+<tr><td>clean</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#a31515'>LOST</td><td style='background:#a31515'>GARBAGE</td></tr>
+<tr><td>crash4</td><td style='background:#a31515'>CORRUPT</td><td style='background:#a31515'>CORRUPT</td><td style='background:#a31515'>CORRUPT</td></tr>
+<tr><td>crash5</td><td style='background:#a31515'>DUPLICATE+GARBAGE</td><td style='background:#a31515'>GARBAGE</td><td style='background:#a31515'>DUPLICATE+GARBAGE</td></tr>
+</table>
+<table><caption>after</caption><tr><th>machine \ transport</th><th>ok</th><th>malformed_json</th><th>bad_url</th></tr>
+<tr><td>clean</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>HONEST_FAIL</td><td style='background:#1f7a33'>HONEST_FAIL</td></tr>
+<tr><td>crash4</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>HONEST_FAIL</td><td style='background:#1f7a33'>HONEST_FAIL</td></tr>
+<tr><td>crash5</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>HONEST_FAIL</td><td style='background:#1f7a33'>HONEST_FAIL</td></tr>
+</table>
+<p class=tag>interaction cell (crash5, bad_url) = <b style='color:#a31515'>DUPLICATE+GARBAGE</b> &mdash; the compound only the cross product finds.</p>
+<h2>file_backup <span class=tag>records = backed-up file</span></h2>
+<table><caption>before</caption><tr><th>machine \ transport</th><th>ok</th><th>malformed_json</th><th>bad_url</th></tr>
+<tr><td>clean</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#a31515'>LOST</td><td style='background:#a31515'>GARBAGE</td></tr>
+<tr><td>crash@cache</td><td style='background:#a31515'>CORRUPT</td><td style='background:#a31515'>CORRUPT</td><td style='background:#a31515'>CORRUPT</td></tr>
+<tr><td>crash@backup</td><td style='background:#b58900'>DUPLICATE</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#a31515'>DUPLICATE+GARBAGE</td></tr>
+</table>
+<table><caption>after</caption><tr><th>machine \ transport</th><th>ok</th><th>malformed_json</th><th>bad_url</th></tr>
+<tr><td>clean</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>HONEST_FAIL</td><td style='background:#1f7a33'>HONEST_FAIL</td></tr>
+<tr><td>crash@cache</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>HONEST_FAIL</td><td style='background:#1f7a33'>HONEST_FAIL</td></tr>
+<tr><td>crash@backup</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>CLEAN</td></tr>
+</table>
+<p class=tag>interaction cell (crash@backup, bad_url) = <b style='color:#a31515'>DUPLICATE+GARBAGE</b> &mdash; the compound only the cross product finds.</p>
+<h2>indexer <span class=tag>records = indexed document</span></h2>
+<table><caption>before</caption><tr><th>machine \ transport</th><th>ok</th><th>malformed_json</th><th>bad_url</th></tr>
+<tr><td>clean</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#a31515'>LOST</td><td style='background:#a31515'>GARBAGE</td></tr>
+<tr><td>crash@cache</td><td style='background:#a31515'>CORRUPT</td><td style='background:#a31515'>CORRUPT</td><td style='background:#a31515'>CORRUPT</td></tr>
+<tr><td>crash@append</td><td style='background:#b58900'>DUPLICATE</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#a31515'>DUPLICATE+GARBAGE</td></tr>
+</table>
+<table><caption>after</caption><tr><th>machine \ transport</th><th>ok</th><th>malformed_json</th><th>bad_url</th></tr>
+<tr><td>clean</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>HONEST_FAIL</td><td style='background:#1f7a33'>HONEST_FAIL</td></tr>
+<tr><td>crash@cache</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>HONEST_FAIL</td><td style='background:#1f7a33'>HONEST_FAIL</td></tr>
+<tr><td>crash@append</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>CLEAN</td></tr>
+</table>
+<p class=tag>interaction cell (crash@append, bad_url) = <b style='color:#a31515'>DUPLICATE+GARBAGE</b> &mdash; the compound only the cross product finds.</p>
+<h2>mailer <span class=tag>records = sent email</span></h2>
+<table><caption>before</caption><tr><th>machine \ transport</th><th>ok</th><th>malformed_json</th><th>bad_url</th></tr>
+<tr><td>clean</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#a31515'>LOST</td><td style='background:#a31515'>GARBAGE</td></tr>
+<tr><td>crash@draft</td><td style='background:#a31515'>CORRUPT</td><td style='background:#a31515'>CORRUPT</td><td style='background:#a31515'>CORRUPT</td></tr>
+<tr><td>crash@send</td><td style='background:#b58900'>DUPLICATE</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#a31515'>DUPLICATE+GARBAGE</td></tr>
+</table>
+<table><caption>after</caption><tr><th>machine \ transport</th><th>ok</th><th>malformed_json</th><th>bad_url</th></tr>
+<tr><td>clean</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>HONEST_FAIL</td><td style='background:#1f7a33'>HONEST_FAIL</td></tr>
+<tr><td>crash@draft</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>HONEST_FAIL</td><td style='background:#1f7a33'>HONEST_FAIL</td></tr>
+<tr><td>crash@send</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>CLEAN</td></tr>
+</table>
+<p class=tag>interaction cell (crash@send, bad_url) = <b style='color:#a31515'>DUPLICATE+GARBAGE</b> &mdash; the compound only the cross product finds.</p>
+<h2>order_processor <span class=tag>records = committed order</span></h2>
+<table><caption>before</caption><tr><th>machine \ transport</th><th>ok</th><th>malformed_json</th><th>bad_url</th></tr>
+<tr><td>clean</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#a31515'>LOST</td><td style='background:#a31515'>GARBAGE</td></tr>
+<tr><td>crash@pending</td><td style='background:#a31515'>CORRUPT</td><td style='background:#a31515'>CORRUPT</td><td style='background:#a31515'>CORRUPT</td></tr>
+<tr><td>crash@seq</td><td style='background:#b58900'>DUPLICATE</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#a31515'>DUPLICATE+GARBAGE</td></tr>
+</table>
+<table><caption>after</caption><tr><th>machine \ transport</th><th>ok</th><th>malformed_json</th><th>bad_url</th></tr>
+<tr><td>clean</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>HONEST_FAIL</td><td style='background:#1f7a33'>HONEST_FAIL</td></tr>
+<tr><td>crash@pending</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>HONEST_FAIL</td><td style='background:#1f7a33'>HONEST_FAIL</td></tr>
+<tr><td>crash@seq</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>CLEAN</td></tr>
+</table>
+<p class=tag>interaction cell (crash@seq, bad_url) = <b style='color:#a31515'>DUPLICATE+GARBAGE</b> &mdash; the compound only the cross product finds.</p>
+<h2>scheduler <span class=tag>records = queued job</span></h2>
+<table><caption>before</caption><tr><th>machine \ transport</th><th>ok</th><th>malformed_json</th><th>bad_url</th></tr>
+<tr><td>clean</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#a31515'>LOST</td><td style='background:#a31515'>GARBAGE</td></tr>
+<tr><td>crash@cache</td><td style='background:#a31515'>CORRUPT</td><td style='background:#a31515'>CORRUPT</td><td style='background:#a31515'>CORRUPT</td></tr>
+<tr><td>crash@dispatch</td><td style='background:#b58900'>DUPLICATE</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#a31515'>DUPLICATE+GARBAGE</td></tr>
+</table>
+<table><caption>after</caption><tr><th>machine \ transport</th><th>ok</th><th>malformed_json</th><th>bad_url</th></tr>
+<tr><td>clean</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>HONEST_FAIL</td><td style='background:#1f7a33'>HONEST_FAIL</td></tr>
+<tr><td>crash@cache</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>HONEST_FAIL</td><td style='background:#1f7a33'>HONEST_FAIL</td></tr>
+<tr><td>crash@dispatch</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>CLEAN</td><td style='background:#1f7a33'>CLEAN</td></tr>
+</table>
+<p class=tag>interaction cell (crash@dispatch, bad_url) = <b style='color:#a31515'>DUPLICATE+GARBAGE</b> &mdash; the compound only the cross product finds.</p>
+</body></html>

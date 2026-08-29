@@ -1,62 +1,60 @@
-"""Buggy fixture: a crawler that indexes a document into index.ndjson (one JSON object per
-line) and flags progress in fetch_cache.json. Stdlib only. Runs INSIDE a Daytona sandbox.
+"""Fixture agent workflow: a refund bot. Runs INSIDE a Daytona sandbox. Stdlib only.
 
-Fault inputs:
-  FAULT     ok | malformed_json | bad_url
-  CRASH_AT  4 dies inside the cache write (torn fetch_cache.json)
-            5 dies after the index line but before the progress flag (cross-artifact)
+Two fault inputs:
+  FAULT     transport fault, injected at the tool-function boundary (ok|malformed_json|bad_url|empty)
+  CRASH_AT  machine fault, the step number to die at via os._exit(1)
 
 Deliberate bugs -- this is the thing under test, not production code.
 """
-import json, os
+import json, os, time
 
-STATE, CACHE, INDEX, ERR = "state.json", "fetch_cache.json", "index.ndjson", "error.txt"
+STATE, CACHE, LEDGER, ERR = "state.json", "cache.json", "ledger.txt", "error.txt"
 CRASH_AT = int(os.environ.get("CRASH_AT", "0"))
+# Test hook, 0 in every sweep cell: holds the process open between the two half-writes so an
+# external killer (a real sandbox.stop()) can land INSIDE the write. Not used by the matrix.
+HOLD = float(os.environ.get("HOLD", "0"))
 FAULT = os.environ.get("FAULT", "ok")
 
 
-def call_tool():
-    if FAULT == "malformed_json": return "{'doc': 'x'"
-    if FAULT == "bad_url": return {"doc": "hello", "url": "htp:/broken url"}
-    return {"doc": "hello", "url": "https://crawl.example/d/1"}
+def call_tool():                                  # the transport-fault injection point
+    if FAULT == "malformed_json": return "{'amount': 250"          # unparseable string
+    if FAULT == "bad_url":        return {"amount": 250, "receipt": "htp:/broken url"}
+    if FAULT == "empty":          return {}
+    return {"amount": 250, "receipt": "https://pay.example/r/4471"}
 
 
-def step(n, name, fn, s):
+def step(n, name, fn, s):                         # generic kill for steps with no inner kill
     fn(s)
     print(f"step {n} {name} ok", flush=True)
-    if CRASH_AT == n: os._exit(1)
+    if CRASH_AT == n: os._exit(1)                 # no atexit, no buffer flush
 
 
 def fetch(s):
     r = call_tool()
-    if isinstance(r, str): r = json.loads(r)      # BUG 0: no guard
-    s.update(r); s["doc_id"] = "doc_1"
+    if isinstance(r, str): r = json.loads(r)      # BUG 0: no guard, dies or half-parses
+    s.update(r); s["id"] = "4471"
 
 
-def validate(s): s["valid"] = True                # BUG 0b: never checks the url
-
-
-def compute(s): s["words"] = len(s.get("doc", "").split())
+def validate(s): s["valid"] = True                # BUG 0b: never checks the receipt URL
+def compute(s):  s["refund"] = s.get("amount", 0)
 
 
 def cache(s):                                     # BUG 1: no atomic rename
     p = json.dumps(s); h = len(p) // 2
     f = open(CACHE, "w")
-    f.write(p[:h]); f.flush()
-    if CRASH_AT == 4: os._exit(1)
+    f.write(p[:h]); f.flush()                     # first half is on disk
+    if CRASH_AT == 4: os._exit(1)                 # dies INSIDE the write: truncated JSON
     f.write(p[h:]); f.close()
 
 
-def append_doc(s):                                # BUG 2: side effect before commit
-    line = json.dumps({"id": s["doc_id"], "url": s["url"]}) + "\n"
-    f = open(INDEX, "a")                          # append, no dedupe by doc id
-    f.write(line); f.flush()
-    if CRASH_AT == 5: os._exit(1)
-    f.close()
-    c = {}
-    if os.path.exists(CACHE): c = json.load(open(CACHE))
-    c["indexed"] = s["doc_id"]
-    open(CACHE, "w").write(json.dumps(c))         # non-atomic progress flag
+def refund(s):                                    # BUG 2: side effect before commit
+    line = f"REFUND {s['id']} {s['refund']} {s.get('receipt','')}\n"
+    h = len(line) // 2
+    f = open(LEDGER, "a")
+    f.write(line[:h]); f.flush()                  # half a record, no trailing newline
+    if HOLD: print("HELD mid-write", flush=True); time.sleep(HOLD)
+    if CRASH_AT == 5: os._exit(1)                 # genuinely half-written ledger
+    f.write(line[h:]); f.close()
 
 
 def mark_done(s):
@@ -71,10 +69,9 @@ def main():
         if s.get("done"): print("already done"); return
     if os.path.exists(CACHE):
         s.update(json.load(open(CACHE)))          # consumes a corrupt cache blindly
-    for i, (n, fn) in enumerate([("fetch", fetch), ("validate", validate),
-                                 ("compute", compute), ("cache", cache),
-                                 ("append_doc", append_doc), ("mark_done", mark_done)], 1):
-        step(i, n, fn, s)
+    for i, (n, f) in enumerate([("fetch", fetch), ("validate", validate), ("compute", compute),
+                                ("cache", cache), ("refund", refund), ("mark_done", mark_done)], 1):
+        step(i, n, f, s)
 
 
 main()

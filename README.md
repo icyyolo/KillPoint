@@ -403,6 +403,7 @@ localsim.py               the whole matrix on the local filesystem, no sandboxes
 hero_kill.py              real sandbox.stop() mid-write — the machine-kill proof
 probe.py                  verifies the four Daytona assumptions the sweep depends on
 
+demo.py                   the whole demo in one command: page + matrix + repair loop
 report.py                 builds the report page, deploys it, mints the signed preview URL
 live.py                   pushes state.json into the report box; code_focus() AST attribution
 livesweep.py              drives the live feed: real sweep, --replay, or --replay-fix
@@ -449,7 +450,8 @@ workflows themselves are stdlib-only, because they have to run inside a bare san
 .venv/bin/python fixer.py --fixture mailer --before results_mailer.json
 
 # the page
-.venv/bin/python report.py                      # deploy -> public preview URL
+.venv/bin/python demo.py                        # everything at once (see the runbook below)
+.venv/bin/python report.py                      # deploy the page only -> public preview URL
 .venv/bin/python report.py --local              # write report.html only, no sandbox
 .venv/bin/python report.py --refresh            # new signed URL on the SAME box
 .venv/bin/python fixtures_report.py             # all fixtures -> report_fixtures.html
@@ -471,24 +473,29 @@ workflows themselves are stdlib-only, because they have to run inside a bare san
 
 ## Demo runbook
 
+`demo.py` is the whole thing in one command: it builds the page for the fixture, puts it
+on a public Daytona URL, seeds or runs the failing matrix, and runs the repair loop
+against Nosana — every stage streaming into that same page. One process, one URL.
+
 ```bash
-# 1. put the page online, get the URL (do this well before, not on stage)
-.venv/bin/python report.py
-# ... signed URL expires after 3600s; regenerate on the same box shortly before demoing:
-.venv/bin/python report.py --refresh
-
-# 2. safest option — replay the recorded repair into the live page. No sandboxes,
-#    no GPU, no venue wifi dependency beyond reaching the report box.
-.venv/bin/python livesweep.py --replay-fix artifacts/fix_events.refund_7b.json
-
-# 3. live option — run the real thing against Nosana, streaming into the page
-.venv/bin/python report.py --fixture mailer --refresh
-.venv/bin/python fixer.py --fixture mailer --before results_mailer.json --live
+.venv/bin/python demo.py                    # the full live run, refund bot
+.venv/bin/python demo.py --fixture mailer   # the same, in another domain
+.venv/bin/python demo.py --sweep            # also run the BEFORE matrix live, not from file
+.venv/bin/python demo.py --replay           # no sandboxes, no GPU: replay the recording
 ```
 
-**`fixer.py --live` overwrites `fix_events.json`, `results_after.json` and `state.json`.**
-Back up any recording you intend to demo before running it. The refund-bot repair is
-preserved at `artifacts/fix_events.refund_7b.json` for exactly this reason.
+Add `?big` to the URL for projector-sized type, or use the button in the corner.
+
+`--replay` is the stage-safe path: it needs nothing but the report box, so a dead GPU or
+bad venue wifi cannot take the demo down. Everything the live run shows — the diffs, the
+findings, the green AFTER board — is reconstructed from the recording.
+
+`demo.py` backs up `fix_events.json` to `artifacts/` before overwriting it, so a live run
+can no longer destroy the recording you meant to demo.
+
+**Concurrency:** a sweep is one sandbox per cell (9) and the page's box is a tenth, which
+is the whole tier allowance. Never run two at once — the second fails on quota, which
+looks exactly like an agent defect and is not one.
 
 ---
 

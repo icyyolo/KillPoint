@@ -1,13 +1,15 @@
-import json, os, re
+import json, os, re, sys, time
 
-STATE, CACHE, INDEX, ERR = "state.json", "fetch_cache.json", "index.ndjson", "error.txt"
+STATE, CACHE, LEDGER, ERR = "state.json", "cache.json", "ledger.txt", "error.txt"
 CRASH_AT = int(os.environ.get("CRASH_AT", "0"))
+HOLD = float(os.environ.get("HOLD", "0"))
 FAULT = os.environ.get("FAULT", "ok")
 
 def call_tool():
-    if FAULT == "malformed_json": return "{'doc': 'x'"
-    if FAULT == "bad_url": return {"doc": "hello", "url": "htp:/broken url"}
-    return {"doc": "hello", "url": "https://crawl.example/d/1"}
+    if FAULT == "malformed_json": return "{'amount': 250"
+    if FAULT == "bad_url":        return {"amount": 250, "receipt": "htp:/broken url"}
+    if FAULT == "empty":          return {}
+    return {"amount": 250, "receipt": "https://pay.example/r/4471"}
 
 def step(n, name, fn, s):
     fn(s)
@@ -17,52 +19,51 @@ def step(n, name, fn, s):
 def fetch(s):
     r = call_tool()
     if isinstance(r, str): r = json.loads(r)
-    s.update(r); s["doc_id"] = "doc_1"
+    s.update(r); s["id"] = "4471"
 
 def validate(s):
-    if not re.match("^https://", s["url"]):
-        raise ValueError("Invalid URL")
+    if not re.match("^https://", s.get("receipt", "")):
+        raise ValueError("Invalid receipt URL")
 
-def compute(s): s["words"] = len(s.get("doc", "").split())
+def compute(s):  s["refund"] = s.get("amount", 0)
 
 def cache(s):
-    p = json.dumps(s); h = len(p) // 2
+    p = json.dumps(s)
     tmp_file = CACHE + ".tmp"
     with open(tmp_file, "w") as f:
-        f.write(p[:h])
-        if CRASH_AT == 4: os._exit(1)
-        f.write(p[h:])
+        f.write(p)
+    if CRASH_AT == 4: os._exit(1)
     os.replace(tmp_file, CACHE)
 
-def rebuild_index():
-    seen_ids = set()
-    tmp_file = INDEX + ".tmp"
-    with open(tmp_file, "w") as f_out:
-        if os.path.exists(INDEX):
-            with open(INDEX, "r") as f_in:
-                for line in f_in:
-                    try:
-                        doc = json.loads(line)
-                        if re.match("^https://", doc["url"]) and doc["id"] not in seen_ids:
-                            f_out.write(line)
-                            seen_ids.add(doc["id"])
-                    except json.JSONDecodeError:
-                        pass
-    os.replace(tmp_file, INDEX)
-
-def append_doc(s):
-    line = json.dumps({"id": s["doc_id"], "url": s["url"]}) + "\n"
-    with open(INDEX, "a") as f:
+def refund(s):
+    line = f"REFUND {s['id']} {s['refund']} {s.get('receipt','')}\n"
+    tmp_file = LEDGER + ".tmp"
+    with open(tmp_file, "w") as f:
         f.write(line)
     if CRASH_AT == 5: os._exit(1)
+    os.replace(tmp_file, LEDGER)
+
+def rebuild_ledger():
+    seen_ids = set()
+    new_records = []
+    if os.path.exists(LEDGER):
+        with open(LEDGER, "r") as f:
+            for line in f:
+                parts = line.strip().split()
+                if len(parts) != 4: continue
+                _, id_, amount, receipt = parts
+                if not re.match("^https://", receipt): continue
+                if id_ in seen_ids: continue
+                seen_ids.add(id_)
+                new_records.append((id_, amount, receipt))
+    
+    with open(LEDGER, "w") as f:
+        for id_, amount, receipt in new_records:
+            f.write(f"REFUND {id_} {amount} {receipt}\n")
 
 def mark_done(s):
     s["done"] = True
     with open(STATE, "w") as f: json.dump(s, f)
-
-def handle_error(reason):
-    with open(ERR, "w") as f: f.write(reason)
-    import sys; sys.stderr.write(f'HONEST_FAIL: {reason}\n'); sys.exit(1)
 
 def main():
     s = {}
@@ -72,25 +73,29 @@ def main():
             if s.get("done"):
                 print("already done")
                 return
-        except json.JSONDecodeError:
-            handle_error("Corrupt state file")
-    
+        except Exception as e:
+            print(f"HONEST_FAIL: Corrupted state file: {e}", file=sys.stderr)
+            os.rename(STATE, STATE + ".corrupt")
+            s = {}
+
     if os.path.exists(CACHE):
         try:
             s.update(json.load(open(CACHE)))
-        except json.JSONDecodeError:
+        except Exception as e:
+            print(f"HONEST_FAIL: Corrupted cache file: {e}", file=sys.stderr)
             os.rename(CACHE, CACHE + ".corrupt")
             s = {}
 
-    rebuild_index()
+    rebuild_ledger()
 
-    for i, (n, fn) in enumerate([("fetch", fetch), ("validate", validate),
-                                 ("compute", compute), ("cache", cache),
-                                 ("append_doc", append_doc), ("mark_done", mark_done)], 1):
+    for i, (n, f) in enumerate([("fetch", fetch), ("validate", validate), ("compute", compute),
+                                ("cache", cache), ("refund", refund), ("mark_done", mark_done)], 1):
         try:
-            step(i, n, fn, s)
+            step(i, n, f, s)
         except Exception as e:
-            handle_error(str(e))
+            print(f"HONEST_FAIL: {e}", file=sys.stderr)
+            with open(ERR, "w") as f: f.write(str(e))
+            os._exit(1)
 
 if __name__ == "__main__":
     main()

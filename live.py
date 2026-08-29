@@ -4,26 +4,28 @@ Pushes a state.json into the running report sandbox as a sweep progresses. The p
 polls it. If nothing ever pushes, the page falls back to the recorded matrices, so the
 demo never depends on a live run coming up on venue wifi.
 """
-import ast, json, os, queue, threading, time
+import ast, difflib, json, os, queue, threading, time
 
 STATE_PATH = "state.json"
 BUGGY_SRC = "workflow.buggy.py"
 
 # What each verdict flag means in plain English, for the findings feed. Same defects the
 # fixer is told about in REMEDIATION -- phrased for a human reading a projector.
+# {label}/{cache}/{err} are filled from the fixture, so a mailer run does not describe
+# its defects in the refund bot's vocabulary.
 FINDING = {
     "CORRUPT":   ("truncated cache consumed",
-                  "cache.json is unparseable on disk after the run -- the previous crash "
+                  "{cache} is unparseable on disk after the run -- the previous crash "
                   "tore it mid-write and this run did not quarantine it."),
-    "DUPLICATE": ("paid twice",
-                  "more than one REFUND record in ledger.txt: the retry did not notice the "
-                  "id was already there."),
-    "GARBAGE":   ("bad receipt written",
-                  "a REFUND record has a receipt that is not an https:// URL -- a malformed "
-                  "tool response was committed to the ledger as if it were real."),
+    "DUPLICATE": ("{label} written twice",
+                  "more than one {label} record in the durable log: the retry did not "
+                  "notice the id was already there."),
+    "GARBAGE":   ("invalid {label} written",
+                  "a {label} record has a field that is not an https:// URL -- a malformed "
+                  "tool response was committed to the log as if it were real."),
     "LOST":      ("failed silently",
-                  "no REFUND and no error.txt: the run gave up without paying and without "
-                  "telling anyone."),
+                  "no {label} record and no {err}: the run gave up without doing the work "
+                  "and without telling anyone."),
 }
 
 # Which code a verdict is actually about, so the page can show the defect next to the
@@ -90,13 +92,33 @@ def code_focus(buggy_src, fixed_src):
     return out
 
 
-def findings_for(r):
+def diff_lines(prev, new, context=3, cap=400):
+    """Unified diff of the previous file against the patch, plus what it did to the
+    functions. A whole-file dump does not show what the model changed; this does."""
+    d = list(difflib.unified_diff(prev.splitlines(), new.splitlines(),
+                                  lineterm="", n=context))[2:]   # drop the ---/+++ header
+    add = sum(1 for l in d if l[:1] == "+")
+    rem = sum(1 for l in d if l[:1] == "-")
+    if len(d) > cap:
+        d = d[:cap] + [f"@@ ... {len(d) - cap} more diff lines @@"]
+    b, a = _top_defs(prev), _top_defs(new)
+    return dict(text="\n".join(d), added=add, removed=rem,
+                fn_added=[k for k in a if k not in b],
+                fn_changed=[k for k in a if k in b and a[k] != b[k]],
+                fn_removed=[k for k in b if k not in a])
+
+
+def findings_for(r, f=None):
     """Every defect the classifier found in one cell, with its on-disk evidence."""
+    import fixture as fxmod
+    f = f or fxmod.default()
+    words = dict(label=f.record_label, err=f.err_file,
+                 cache=(f.parseable[0] if f.parseable else "the cache"))
     out = []
     for flag in r["verdict"].split("+"):
         if flag not in FINDING:
             continue
-        title, why = FINDING[flag]
+        title, why = (t.format(**words) for t in FINDING[flag])
         out.append(dict(machine=r["machine"], transport=r["transport"], flag=flag,
                         title=title, why=why, refunds=r.get("refunds", 0),
                         exit_code=r.get("exit_code"),
@@ -108,8 +130,12 @@ class Live:
     """Coalescing background pusher: the sweep never blocks on an upload, and a slow link
     drops stale frames instead of queueing them."""
 
-    def __init__(self, sandbox=None, resume=False):
+    def __init__(self, sandbox=None, resume=False, f=None):
         self.sb = sandbox
+        import fixture as fxmod
+        self.f = f or fxmod.default()
+        # what the next patch is diffed against: the buggy original, then each patch in turn
+        self.prev_src = None
         # Once the repair starts, the findings list is frozen: it is the list of defects
         # the patch has to answer for. Re-sweep cells fill the AFTER grid instead.
         self.frozen = False
@@ -170,7 +196,7 @@ class Live:
             dict(machine=r["machine"], transport=r["transport"], status="done",
                  verdict=r["verdict"], colour=r["colour"], refunds=r.get("refunds", 0),
                  exit_code=r.get("exit_code"), autopsy=r.get("autopsy")) for r in results]
-        self.state["findings"] = [f for r in results for f in findings_for(r)]
+        self.state["findings"] = [x for r in results for x in findings_for(r, self.f)]
         self.push(phase=phase, done=False)
 
     def cell_done(self, r, ms):
@@ -180,7 +206,7 @@ class Live:
                          refunds=r.get("refunds", 0), exit_code=r.get("exit_code"),
                          autopsy=r.get("autopsy"), ms=ms)
         if not self.frozen:
-            self.state["findings"].extend(findings_for(r))
+            self.state["findings"].extend(findings_for(r, self.f))
         self.push()
 
     # ---- fixer loop ----------------------------------------------------------
@@ -209,9 +235,23 @@ class Live:
         self._round(n).update(status="asking", evidence=evidence)
         self.push()
 
+    def buggy_src(self):
+        """The fixture's own workflow is the buggy original -- fixer.py never overwrites it.
+        workflow.buggy.py is a copy left by whichever fixture ran last, so it is only the
+        fallback: diffing a refund patch against the mailer's source is nonsense."""
+        for path in (self.f.workflow, BUGGY_SRC):
+            try: return open(path).read()
+            except Exception: pass
+        return ""
+
     def round_patch(self, n, patch, author, latency=None, tokens=None):
+        if self.prev_src is None:
+            self.prev_src = self.buggy_src()
+        d = diff_lines(self.prev_src, patch) if patch else None
         self._round(n).update(status="patched", patch=patch, latency=latency,
-                              tokens=tokens)
+                              tokens=tokens, diff=d)
+        if patch:
+            self.prev_src = patch
         self.state["fix"]["author"] = author
         self.attach_code(patch)
         self.push()
@@ -220,7 +260,7 @@ class Live:
         """Hang the buggy lines and the patched lines off each finding, so hovering a
         defect shows what it did AND what changed to stop it doing that."""
         try:
-            focus = code_focus(open(BUGGY_SRC).read(), patch)
+            focus = code_focus(self.buggy_src(), patch)
         except Exception:
             return
         for f in self.state.get("findings", []):

@@ -215,7 +215,7 @@ if __name__ == "__main__":
     if a.live:
         from live import Live
         from livesweep import report_sandbox
-        lv = Live(report_sandbox(), resume=True)
+        lv = Live(report_sandbox(), resume=True, f=fx.get(a.fixture))
     ok = False
     try:
         ok = fix_loop(fx.get(a.fixture), lv, a.before)

@@ -160,6 +160,26 @@ CSS = """
  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;
            box-shadow:inset 0 0 0 2px #d29922;vertical-align:-1px;margin-right:5px}
 
+ /* --- verdict legend: the grid is jargon without a key --- */
+ .key{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+ .kv2{font-size:11px;padding:3px 9px;border-radius:5px;color:#fff;font-weight:600;
+      white-space:nowrap}
+ .kv2 span{font-weight:400;opacity:.82}
+
+ /* --- the machine kill: the one thing that needs a real machine --- */
+ .kill{margin:0 0 22px}
+ .kill .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;
+              margin-bottom:13px}
+ .kill .st{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:10px 13px}
+ .kill .st h5{margin:0 0 4px}
+ .kill .st .b{font-family:ui-monospace,monospace;font-size:12px;color:#c9d1d9;
+              word-break:break-all}
+ .kill .st.dead{border-color:#5c2320} .kill .st.back{border-color:#1a7f37}
+ .kill .punch{font-family:ui-monospace,monospace;font-size:13px;color:#ff7b72;
+              background:#0d1117;border-left:3px solid #b3261e;border-radius:6px;
+              padding:10px 14px}
+ .kill .punch b{color:#fff}
+
  /* --- projector mode (?big, or the corner button) --- */
  body.big{font-size:19px}
  body.big h1{font-size:34px}
@@ -169,6 +189,7 @@ CSS = """
  body.big pre.diff{max-height:none}
  body.big .feedcol{max-height:none}
  body.big .sc .v{font-size:15px} body.big .sub,body.big .tally{font-size:14px}
+ body.big .kv2{font-size:14px} body.big .kill .st .b,body.big .kill .punch{font-size:15px}
  #bigbtn{position:fixed;right:15px;bottom:15px;z-index:60;background:#21262d;color:#8b949e;
          border:1px solid #30363d;border-radius:7px;padding:7px 13px;font-size:12px;
          cursor:pointer;font-family:inherit}
@@ -452,6 +473,55 @@ def live_grid(f, pfx):
     return "".join(h)
 
 
+# The six verdicts, in the order a reader should meet them: the two good outcomes first,
+# then the four ways an agent can be wrong.
+LEGEND = [
+    ("CLEAN",       "#1a7f37", "one valid record &mdash; it did the work"),
+    ("HONEST_FAIL", "#1a7f37", "no record, but it said so &mdash; the good failure"),
+    ("DUPLICATE",   "#9a6700", "the durable effect happened more than once"),
+    ("CORRUPT",     "#b3261e", "left a state file unparseable on disk"),
+    ("GARBAGE",     "#b3261e", "wrote a record whose content is not valid"),
+    ("LOST",        "#b3261e", "no record, no error &mdash; it failed silently"),
+]
+
+
+def legend_html():
+    return "<div class=key>" + "".join(
+        f'<span class=kv2 style="background:{c}">{v} <span>{why}</span></span>'
+        for v, c, why in LEGEND) + "</div>"
+
+
+def kill_html(f):
+    """The hero case, from hero_kill.json: a real sandbox.stop() mid-write. The sweep kills
+    the process; this kills the machine. Rendered only for the fixture it was run against."""
+    if f.name != "refund_bot" or not os.path.exists("hero_kill.json"):
+        return ""
+    k = json.load(open("hero_kill.json"))
+    if not k.get("state_survived_machine_death"):
+        return ""
+    return f"""
+<div class="card kill">
+  <div class=head><h2>The machine kill</h2>
+    <span class="pill bad">state survived machine death</span>
+    <span class=sub>sandbox {k['sandbox_id'][:8]} &middot; hero_kill.py</span></div>
+  <p class=none style="margin:-6px 0 13px">Everywhere else on this page the <i>process</i> is
+  killed mid-write. Here the <i>machine</i> is: a real <code>sandbox.stop()</code> lands while
+  the agent is holding the ledger open. It produces identical wreckage &mdash; which is what
+  makes the cheaper process kill a fair stand-in.</p>
+  <div class=steps>
+    <div class=st><h5>1. mid-flight, holding the file</h5>
+      <div class=b>{k['ledger_before_kill']!r}</div></div>
+    <div class="st dead"><h5>2. sandbox.stop() &mdash; {k['stop_seconds']}s</h5>
+      <div class=b>{k['state_while_down']}</div></div>
+    <div class="st back"><h5>3. sandbox.start() &mdash; {k['start_seconds']}s</h5>
+      <div class=b>{k['ledger_after_restart']!r}</div></div>
+  </div>
+  <div class=punch>the agent restarts on that disk and appends onto the torn record:<br>
+    <b>{k['ledger_after_agent_restart'].strip()!r}</b><br>
+    {k['refunds']} {f.record_label} records &mdash; paid twice, because the machine died, not the process.</div>
+</div>"""
+
+
 def build(before, f=None):
     f = f or fx.default()
     im, it = f.interaction
@@ -469,6 +539,16 @@ def build(before, f=None):
 <p class=lede>Agent reliability across the <b>transport &times; machine</b> fault matrix.
 Rows are machine states a previous run left behind &mdash; each needs a real, disposable
 machine. Columns are transport faults. One disposable Daytona sandbox per cell, all in parallel.</p>
+
+<div class=note><b>The interaction cell &mdash;
+<code>{im} &times; {it}</code>:</b> a torn record left by the previous crash, plus a
+malformed receipt from the tool. The retry appends onto the torn record, so the log ends
+up with <b>{inter.get('refunds',0)} {f.record_label} records</b> and a receipt that is not
+a URL &mdash; and nothing is written to <code>{f.err_file}</code>. Verdict
+<code>{inter['verdict']}</code>. Neither axis alone produces it:
+<code>clean &times; {it}</code> is <code>{by[('clean', it)]['verdict']}</code> only,
+<code>{im} &times; {f.transports[0]}</code> never sees the bad receipt
+(<code>{by[(im, f.transports[0])]['verdict']}</code>).</div>
 
 <div class=score id=score>
   <div class="sc nos"><h4>Nosana &mdash; the fixer</h4><div class=v id=sc_nos></div></div>
@@ -492,6 +572,7 @@ machine. Columns are transport faults. One disposable Daytona sandbox per cell, 
     </div>
   </div>
   <div class=delta id=delta></div>
+  {legend_html()}
 </div>
 
 <div class=card id=findcard style="display:none">
@@ -515,15 +596,8 @@ machine. Columns are transport faults. One disposable Daytona sandbox per cell, 
   <div id=rounds></div>
 </div>
 
-<div class=note><b>The interaction cell &mdash;
-<code>{im} &times; {it}</code>:</b> a torn record left by the previous crash, plus a
-malformed receipt from the tool. The retry appends onto the torn record, so the log ends
-up with <b>{inter.get('refunds',0)} {f.record_label} records</b> and a receipt that is not
-a URL &mdash; and nothing is written to <code>{f.err_file}</code>. Verdict
-<code>{inter['verdict']}</code>. Neither axis alone produces it:
-<code>clean &times; {it}</code> is <code>{by[('clean', it)]['verdict']}</code> only,
-<code>{im} &times; {f.transports[0]}</code> never sees the bad receipt
-(<code>{by[(im, f.transports[0])]['verdict']}</code>).</div>
+
+{kill_html(f)}
 
 <button id=bigbtn onclick="toggleBig()">projector size</button>
 <div id=pop></div>
